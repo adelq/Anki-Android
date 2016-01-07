@@ -24,7 +24,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import com.ichi2.anki.AnkiDatabaseManager;
 import com.ichi2.anki.AnkiDb;
 import com.ichi2.anki.AnkiDroidApp;
 import com.ichi2.anki.R;
@@ -108,12 +107,10 @@ public class Collection {
             + "'sortBackwards': False, 'addToCur': True }"; // add new to currently selected deck?
 
     public static final int UNDO_REVIEW = 0;
-    public static final int UNDO_EDIT_NOTE = 1;
     public static final int UNDO_BURY_NOTE = 2;
     public static final int UNDO_SUSPEND_CARD = 3;
     public static final int UNDO_SUSPEND_NOTE = 4;
     public static final int UNDO_DELETE_NOTE = 5;
-    public static final int UNDO_MARK_NOTE = 6;
     public static final int UNDO_BURY_CARD = 7;
 
     private static final int[] fUndoNames = new int[]{
@@ -156,9 +153,12 @@ public class Collection {
         mStartTime = 0;
         mSched = new Sched(this);
         if (!mConf.optBoolean("newBury", false)) {
-            boolean mod = mDb.getMod();
-            mSched.unburyCards();
-            mDb.setMod(mod);
+            try {
+                mConf.put("newBury", true);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            setMod();
         }
     }
 
@@ -296,11 +296,6 @@ public class Collection {
 
     public synchronized void close(boolean save) {
         if (mDb != null) {
-            if (!mConf.optBoolean("newBury", false)) {
-                boolean mod = mDb.getMod();
-                mSched.unburyCards();
-                mDb.setMod(mod);
-            }
             try {
                 SQLiteDatabase db = getDb().getDatabase();
                 if (save) {
@@ -315,12 +310,11 @@ public class Collection {
                     if (db.inTransaction()) {
                         db.endTransaction();
                     }
-                    lock();
                 }
             } catch (RuntimeException e) {
                 AnkiDroidApp.sendExceptionReport(e, "closeDB");
             }
-            AnkiDatabaseManager.closeDatabase(mPath);
+            mDb.closeDatabase();
             mDb = null;
             mMedia.close();
             _closeLog();
@@ -331,7 +325,7 @@ public class Collection {
 
     public void reopen() {
         if (mDb == null) {
-            mDb = AnkiDatabaseManager.getDatabase(mPath);
+            mDb = new AnkiDb(mPath);
             mMedia.connect();
             _openLog();
         }
@@ -859,14 +853,33 @@ public class Collection {
 
 
     public List<Long> emptyCids() {
-		List<Long> rem = new ArrayList<Long>();
-		for (JSONObject m : getModels().all()) {
-			rem.addAll(genCards(getModels().nids(m)));
-		}
-	return rem;
+        List<Long> rem = new ArrayList<>();
+        for (JSONObject m : getModels().all()) {
+            rem.addAll(genCards(getModels().nids(m)));
+        }
+        return rem;
     }
 
-    // emptyCardReport
+
+    public String emptyCardReport(List<Long> cids) {
+        StringBuilder rep = new StringBuilder();
+        Cursor cur = null;
+        try {
+            cur = mDb.getDatabase().rawQuery("select group_concat(ord+1), count(), flds from cards c, notes n "
+                                           + "where c.nid = n.id and c.id in " + Utils.ids2str(cids) + " group by nid", null);
+            while (cur.moveToNext()) {
+                String ords = cur.getString(0);
+                int cnt = cur.getInt(1);
+                String flds = cur.getString(2);
+                rep.append(String.format("Empty card numbers: %s\nFields: %s\n\n", ords, flds.replace("\u001F", " / ")));
+            }
+        } finally {
+            if (cur != null && !cur.isClosed()) {
+                cur.close();
+            }
+        }
+        return rep.toString();
+    }
 
     /**
      * Field checksums and sorting fields ***************************************
@@ -1201,30 +1214,6 @@ public class Collection {
             mSched.setReps(mSched.getReps() - 1);
             return c.getId();
 
-    	case UNDO_EDIT_NOTE:
-    		Note note = (Note) data[1];
-    		note.flush(note.getMod(), false);
-    		long cid = (Long) data[2];
-            Card card = null;
-            if ((Boolean) data[3]) {
-                Card newCard = getCard(cid);
-                if (getDecks().active().contains(newCard.getDid())) {
-                    card = newCard;
-                    card.load();
-                    // Reloads the QA-cache.
-                    // Requests the simple interface version, since the only difference
-                    // is whether the CSS is added and that's not cached.
-                    card.q(true, true);
-                }
-            }
-            if (card == null) {
-            	card = getSched().getCard();
-            }
-            if (card != null) {
-            	return card.getId();
-            }
-    		return 0;
-
     	case UNDO_BURY_NOTE:
     		for (Card cc : (ArrayList<Card>)data[2]) {
     			cc.flush(false);
@@ -1254,12 +1243,6 @@ public class Collection {
     		mDb.execute("DELETE FROM graves WHERE oid IN " + Utils.ids2str(Utils.arrayList2array(ids)));
     		return (Long) data[3];
 
-    	case UNDO_MARK_NOTE:
-    		Note note3 = getNote((Long) data[1]);
-    		note3.setTagsFromStr((String) data[2]);
-    		note3.flush(note3.getMod(), false);
-    		return (Long) data[3];
-
         case UNDO_BURY_CARD:
             for (Card cc : (ArrayList<Card>)data[2]) {
                 cc.flush(false);
@@ -1276,9 +1259,6 @@ public class Collection {
     	case UNDO_REVIEW:
     		mUndo.add(new Object[]{type, ((Card)o[0]).clone(), o[1]});
     		break;
-    	case UNDO_EDIT_NOTE:
-    		mUndo.add(new Object[]{type, ((Note)o[0]).clone(), o[1], o[2]});
-    		break;
         case UNDO_BURY_NOTE:
             mUndo.add(new Object[]{type, o[0], o[1], o[2]});
             break;
@@ -1289,9 +1269,6 @@ public class Collection {
             mUndo.add(new Object[]{type, o[0], o[1]});
             break;
     	case UNDO_DELETE_NOTE:
-    		mUndo.add(new Object[]{type, o[0], o[1], o[2]});
-    		break;
-    	case UNDO_MARK_NOTE:
     		mUndo.add(new Object[]{type, o[0], o[1], o[2]});
     		break;
         case UNDO_BURY_CARD:

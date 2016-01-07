@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -175,10 +174,9 @@ public class CardBrowser extends NavigationDrawerActivity implements
             }
             switch (which) {
                 case CardBrowserContextMenu.CONTEXT_MENU_MARK:
-                    DeckTask.launchDeckTask(DeckTask.TASK_TYPE_MARK_CARD,
-                            mUpdateCardHandler,
-                            new DeckTask.TaskData(getCol().getCard(Long.parseLong(getCards().get(
-                                    mPositionInCardsList).get("id"))), 0));
+                    Card card = getCol().getCard(Long.parseLong(getCards().get(mPositionInCardsList).get("id")));
+                    onMark(card);
+                    updateCardInList(card, null);
                     return;
 
                 case CardBrowserContextMenu.CONTEXT_MENU_SUSPEND:
@@ -339,6 +337,15 @@ public class CardBrowser extends NavigationDrawerActivity implements
         searchCards();
     }
 
+    private void onMark(Card card) {
+        Note note = card.note();
+        if (note.hasTag("marked")) {
+            note.delTag("marked");
+        } else {
+            note.addTag("marked");
+        }
+        note.flush();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -568,25 +575,30 @@ public class CardBrowser extends NavigationDrawerActivity implements
         }
     }
 
+
     @Override
     public void onBackPressed() {
-        Timber.i("CardBrowser:: CardBrowser - onBackPressed()");
-        Intent data = new Intent();
-        if (getIntent().hasExtra("selectedDeck")) {
-            data.putExtra("originalDeck", getIntent().getLongExtra("selectedDeck", 0L));
+        if (isDrawerOpen()) {
+            super.onBackPressed();
+        } else {
+            Timber.i("Back key pressed");
+            Intent data = new Intent();
+            if (getIntent().hasExtra("selectedDeck")) {
+                data.putExtra("originalDeck", getIntent().getLongExtra("selectedDeck", 0L));
+            }
+            if (mReloadRequired) {
+                // Add reload flag to result intent so that schedule reset when returning to note editor
+                data.putExtra("reloadRequired", true);
+            }
+            closeCardBrowser(RESULT_OK, data);
         }
-        if (mReloadRequired) {
-            // Add reload flag to result intent so that schedule reset when returning to note editor
-            data.putExtra("reloadRequired", true);
-        }
-        closeCardBrowser(RESULT_OK, data);
     }
     
     @Override
     protected void onResume() {
         Timber.d("onResume()");
         super.onResume();
-        selectNavigationItem(DRAWER_BROWSER);
+        selectNavigationItem(R.id.nav_browser);
     }
 
 
@@ -644,6 +656,9 @@ public class CardBrowser extends NavigationDrawerActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (getDrawerToggle().onOptionsItemSelected(item)) {
+            return true;
+        }
         switch (item.getItemId()) {
 
             case R.id.action_add_card_from_card_browser:
@@ -906,6 +921,33 @@ public class CardBrowser extends NavigationDrawerActivity implements
         updateList();
     }
 
+    private DeckTask.TaskListener mUpdateCardHandler = new DeckTask.TaskListener() {
+        @Override
+        public void onPreExecute() {
+            showProgressBar();
+        }
+
+
+        @Override
+        public void onProgressUpdate(DeckTask.TaskData... values) {
+            updateCardInList(values[0].getCard(), values[0].getString());
+        }
+
+
+        @Override
+        public void onPostExecute(DeckTask.TaskData result) {
+            Timber.d("Card Browser - mUpdateCardHandler.onPostExecute()");
+            if (!result.getBoolean()) {
+                closeCardBrowser(DeckPicker.RESULT_DB_ERROR);
+            }
+            hideProgressBar();
+        }
+
+
+        @Override
+        public void onCancelled() {
+        }
+    };
 
     public static void updateSearchItemQA(HashMap<String, String> item, Card c) {
         // render question and answer
@@ -978,33 +1020,6 @@ public class CardBrowser extends NavigationDrawerActivity implements
         updateList();
     }
 
-    private DeckTask.TaskListener mUpdateCardHandler = new DeckTask.TaskListener() {
-        @Override
-        public void onPreExecute() {
-            showProgressBar();
-        }
-
-
-        @Override
-        public void onProgressUpdate(DeckTask.TaskData... values) {
-            updateCardInList(values[0].getCard(), values[0].getString());
-        }
-
-
-        @Override
-        public void onPostExecute(DeckTask.TaskData result) {
-            Timber.d("Card Browser - mUpdateCardHandler.onPostExecute()");
-            if (!result.getBoolean()) {
-                closeCardBrowser(DeckPicker.RESULT_DB_ERROR);
-            }
-            hideProgressBar();
-        }
-
-
-        @Override
-        public void onCancelled() {
-        }
-    };
 
     private DeckTask.TaskListener mSuspendCardHandler = new DeckTask.TaskListener() {
         @Override
@@ -1231,17 +1246,15 @@ public class CardBrowser extends NavigationDrawerActivity implements
             // Draw the content in the columns
             View[] columns = (View[]) v.getTag();
             final Map<String, String> dataSet = mData.get(position);
-            final int color = getColor(dataSet.get(mColorFlagKey));
+            final int colorIdx = getColor(dataSet.get(mColorFlagKey));
+            int[] colors = Themes.getColorFromAttr(CardBrowser.this, new int[]{android.R.attr.colorBackground,
+                    R.attr.markedColor, R.attr.suspendedColor, R.attr.markedColor});
             for (int i = 0; i < mToIds.length; i++) {
                 TextView col = (TextView) columns[i];
                 // set font for column
                 setFont(col);
                 // set background color for column
-                int[] attrs = new int[] {android.R.attr.colorBackground, R.attr.markedColor, R.attr.suspendedColor,
-                        R.attr.markedColor};
-                TypedArray ta = obtainStyledAttributes(attrs);
-                col.setBackgroundColor(ta.getColor(color, getResources().getColor(R.color.material_grey_700)));
-                ta.recycle();
+                col.setBackgroundColor(colors[colorIdx]);
                 // set text for column
                 col.setText(dataSet.get(mFromKeys[i]));
             }

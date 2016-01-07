@@ -67,7 +67,6 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
 
     public static final int TASK_TYPE_SAVE_COLLECTION = 2;
     public static final int TASK_TYPE_ANSWER_CARD = 3;
-    public static final int TASK_TYPE_MARK_CARD = 5;
     public static final int TASK_TYPE_ADD_FACT = 6;
     public static final int TASK_TYPE_UPDATE_FACT = 7;
     public static final int TASK_TYPE_UNDO = 8;
@@ -99,6 +98,7 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
     public static final int TASK_TYPE_ADD_FIELD = 45;
     public static final int TASK_TYPE_CHANGE_SORT_FIELD = 46;
     public static final int TASK_TYPE_SAVE_MODEL = 47;
+    public static final int TASK_TYPE_FIND_EMPTY_CARDS = 48;
 
     /**
      * A reference to the application context to use to fetch the current Collection object.
@@ -225,7 +225,7 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
         mContext = AnkiDroidApp.getInstance().getApplicationContext();
 
         // Skip the task if the collection cannot be opened
-        if (mType != TASK_TYPE_REPAIR_DECK && CollectionHelper.getInstance().getCol(mContext) == null) {
+        if (mType != TASK_TYPE_REPAIR_DECK && CollectionHelper.getInstance().getColSafe(mContext) == null) {
             Timber.e("Aborting DeckTask %d as Collection could not be opened", mType);
             return null;
         }
@@ -239,9 +239,6 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
 
             case TASK_TYPE_ANSWER_CARD:
                 return doInBackgroundAnswerCard(params);
-
-            case TASK_TYPE_MARK_CARD:
-                return doInBackgroundMarkCard(params);
 
             case TASK_TYPE_ADD_FACT:
                 return doInBackgroundAddNote(params);
@@ -332,6 +329,8 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
 
             case TASK_TYPE_SAVE_MODEL:
                 return doInBackgroundSaveModel(params);
+            case TASK_TYPE_FIND_EMPTY_CARDS:
+                return doInBackGroundFindEmptyCards(params);
 
             default:
                 Timber.e("unknown task type: %d", mType);
@@ -400,10 +399,6 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
         Card editCard = params[0].getCard();
         Note editNote = editCard.note();
         boolean fromReviewer = params[0].getBoolean();
-
-        // mark undo
-        col.markUndo(Collection.UNDO_EDIT_NOTE, new Object[]{col.getNote(editNote.getId()), editCard.getId(),
-                fromReviewer});
 
         try {
             col.getDb().getDatabase().beginTransaction();
@@ -576,38 +571,6 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
         } catch (RuntimeException e) {
             Timber.e(e, "doInBackgroundSuspendCard - RuntimeException on suspending card");
             AnkiDroidApp.sendExceptionReport(e, "doInBackgroundSuspendCard");
-            return new TaskData(false);
-        }
-        return new TaskData(true);
-    }
-
-
-    private TaskData doInBackgroundMarkCard(TaskData... params) {
-        Card card = params[0].getCard();
-        Collection col = CollectionHelper.getInstance().getCol(mContext);
-        try {
-            AnkiDb ankiDB = col.getDb();
-            ankiDB.getDatabase().beginTransaction();
-            try {
-                if (card != null) {
-                    Note note = card.note();
-                    col.markUndo(Collection.UNDO_MARK_NOTE,
-                            new Object[]{note.getId(), note.stringTags(), card.getId()});
-                    if (note.hasTag("marked")) {
-                        note.delTag("marked");
-                    } else {
-                        note.addTag("marked");
-                    }
-                    note.flush();
-                }
-                publishProgress(new TaskData(card));
-                ankiDB.getDatabase().setTransactionSuccessful();
-            } finally {
-                ankiDB.getDatabase().endTransaction();
-            }
-        } catch (RuntimeException e) {
-            Timber.e(e, "doInBackgroundMarkCard - RuntimeException on marking card");
-            AnkiDroidApp.sendExceptionReport(e, "doInBackgroundMarkCard");
             return new TaskData(false);
         }
         return new TaskData(true);
@@ -1283,6 +1246,12 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
             e.printStackTrace();
         }
         return new TaskData(true);
+    }
+
+    public TaskData doInBackGroundFindEmptyCards(TaskData... params) {
+        Collection col = CollectionHelper.getInstance().getCol(mContext);
+        List<Long> cids = col.emptyCids();
+        return new TaskData(new Object[] { cids});
     }
 
     /**

@@ -41,7 +41,6 @@ import com.ichi2.compat.CompatHelper;
 import com.ichi2.libanki.Collection;
 import com.ichi2.themes.Themes;
 import com.ichi2.widget.WidgetStatus;
-import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import org.json.JSONException;
 
@@ -103,6 +102,9 @@ public class Reviewer extends AbstractFlashcardViewer {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (getDrawerToggle().onOptionsItemSelected(item)) {
+            return true;
+        }
         switch (item.getItemId()) {
 
             case android.R.id.home:
@@ -117,7 +119,7 @@ public class Reviewer extends AbstractFlashcardViewer {
 
             case R.id.action_mark_card:
                 Timber.i("Reviewer:: Mark button pressed");
-                DeckTask.launchDeckTask(DeckTask.TASK_TYPE_MARK_CARD, mMarkCardHandler, new DeckTask.TaskData(mCurrentCard, 0));
+                onMark(mCurrentCard);
                 break;
 
             case R.id.action_replay:
@@ -287,7 +289,7 @@ public class Reviewer extends AbstractFlashcardViewer {
 	            return true;
 	        }
 	        if (keyPressed == '*') {
-	            DeckTask.launchDeckTask(DeckTask.TASK_TYPE_MARK_CARD, mMarkCardHandler, new DeckTask.TaskData(mCurrentCard, 0));
+                onMark(mCurrentCard);
 	            return true;
 	        }
 	        if (keyPressed == '-') {
@@ -431,10 +433,12 @@ public class Reviewer extends AbstractFlashcardViewer {
     }
 
     @Override
-    public boolean onItemClick(View view, int i, IDrawerItem iDrawerItem) {
+    public boolean onNavigationItemSelected(MenuItem item) {
         // Tell the browser the current card ID so that it can tell us when we need to reload
-        setCurrentCardId(mCurrentCard.getId());
-        return super.onItemClick(view, i, iDrawerItem);
+        if (mCurrentCard != null) {
+            setCurrentCardId(mCurrentCard.getId());
+        }
+        return super.onNavigationItemSelected(item);
     }
 
     @Override

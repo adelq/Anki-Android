@@ -39,6 +39,7 @@
 ~ this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
+  <string name="disabled">Disabled</string>
   <string name="pref_cat_general">AnkiDroid</string>
   <string name="pref_cat_general_summ">Општа подешавања</string>
   <string name="pref_cat_reviewing">Обука</string>
@@ -64,6 +65,8 @@
   <string name="whiteboard_black_summ">Користи мање меморије, осим у ноћном режиму</string>
   <string name="write_answers_disable">Онемогући куцање одговора</string>
   <string name="write_answers_disable_summ">Спречава појаву тастатуре на картицама које садрже поље \"укуцајте одговор\"</string>
+  <string name="use_input_tag">Type answer into the card</string>
+  <string name="use_input_tag_summ">Use a text input box inside the card to type in the answer</string>
   <string name="text_selection_click">Исправљање грешке дугог притискања</string>
   <string name="text_selection_click_summ">Укључите, ако не успевате да почнете означавање текста преко дугог притиска</string>
   <string name="dictionary">Кориснички речник</string>
@@ -75,7 +78,7 @@
   <string name="image_zoom">Зумирање слике</string>
   <string name="button_size">Величина дугмета за одговор</string>
   <string name="card_browser_font_size">Величина фонта прегледача картица</string>
-  <string name="col_path">Фасцикла са колекцијом</string>
+  <string name="col_path">AnkiDroid directory</string>
   <string name="fullscreen_review">Пуноекрански режим</string>
   <string name="full_screen_off">Off</string>
   <string name="full_screen_system">Hide the system bars</string>
@@ -151,11 +154,14 @@
   <string name="pref_keep_screen_on">Држи екран укљученим</string>
   <string name="pref_keep_screen_on_summ">Онемогући спавање екрана</string>
   <string name="convert_fen_text">Подршка шаховских бележака</string>
-  <string name="filter_google_translate">Из Google Преводиоца</string>
-  <string name="filter_google_translate_summ">Једноставно чување изворне речи и превода</string>
   <string name="convert_fen_text_summ">Цртај шаховску таблу са Форсит-Едвардс нотацијом. Нотација мора да буде ограђена [fen][/fen] таговима.</string>
   <string name="enable_api_title">Омогући AnkiDroid API</string>
   <string name="enable_api_summary">Нека се друге апликације повежу са AnkiDroid и читају/записују податке без ваше интервенције</string>
+  <string name="custom_sync_server_title">Custom sync server</string>
+  <string name="custom_sync_server_enable_title">Use custom sync server</string>
+  <string name="custom_sync_server_enable_summary">If you don\'t want to use the proprietary AnkiWeb service you can specify an alternative server here</string>
+  <string name="custom_sync_server_base_url_title">Sync url</string>
+  <string name="custom_sync_server_media_url_title">Media sync url</string>
   <string name="studyoptions_limit_select_tags">Изаберите ознаке</string>
   <string name="deck_conf_deck_description">Опис шпила</string>
   <string name="deck_conf_group">Група опције</string>

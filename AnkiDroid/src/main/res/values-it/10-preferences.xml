@@ -39,6 +39,7 @@
 ~ this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
+  <string name="disabled">Disabled</string>
   <string name="pref_cat_general">AnkiDroid</string>
   <string name="pref_cat_general_summ">Impostazioni generali</string>
   <string name="pref_cat_reviewing">Ripetizioni</string>
@@ -64,6 +65,8 @@
   <string name="whiteboard_black_summ">Utilizza meno memoria, ma non funziona in modalità notte</string>
   <string name="write_answers_disable">Disabilita digitazione della risposta</string>
   <string name="write_answers_disable_summ">Impedisce alla tastiera di apparire su carte contenenti campi di immissione della risposta</string>
+  <string name="use_input_tag">Digita la risposta nella carta</string>
+  <string name="use_input_tag_summ">Utilizza una casella di inserimento testo nella carta per digitare la risposta</string>
   <string name="text_selection_click">Soluzione problema click lungo</string>
   <string name="text_selection_click_summ">Attiva questo se non sei in grado di iniziare la selezione di testo con un clic lungo</string>
   <string name="dictionary">Ricerca nel dizionario</string>
@@ -75,7 +78,7 @@
   <string name="image_zoom">Zoom immagini</string>
   <string name="button_size">Dimensione pulsante di risposta</string>
   <string name="card_browser_font_size">Ridimensionamento carattere nel browser</string>
-  <string name="col_path">Percorso della collezione</string>
+  <string name="col_path">AnkiDroid directory</string>
   <string name="fullscreen_review">Modalità a schermo intero</string>
   <string name="full_screen_off">Disabilitato</string>
   <string name="full_screen_system">Nascondi le barre di sistema</string>
@@ -150,11 +153,14 @@
   <string name="pref_keep_screen_on">Mantieni schermo acceso</string>
   <string name="pref_keep_screen_on_summ">Disabilita il timeout dello schermo</string>
   <string name="convert_fen_text">Supporto per la notazione scacchistica</string>
-  <string name="filter_google_translate">Da Traduttore Google</string>
-  <string name="filter_google_translate_summ">Salva unicamente la parola di origine e la traduzione</string>
   <string name="convert_fen_text_summ">Disegna la scacchiera dalla notazione Forsyth-Edwards. La notazione deve essere racchiusa nelle etichette [fen] [/fen].</string>
   <string name="enable_api_title">Attiva API AnkiDroid</string>
   <string name="enable_api_summary">Permetti ad altre applicazioni di connettersi ad AnkiDroid e di leggere / scrivere dati senza il tuo intervento</string>
+  <string name="custom_sync_server_title">Custom sync server</string>
+  <string name="custom_sync_server_enable_title">Use custom sync server</string>
+  <string name="custom_sync_server_enable_summary">If you don\'t want to use the proprietary AnkiWeb service you can specify an alternative server here</string>
+  <string name="custom_sync_server_base_url_title">Sync url</string>
+  <string name="custom_sync_server_media_url_title">Media sync url</string>
   <string name="studyoptions_limit_select_tags">Seleziona etichette</string>
   <string name="deck_conf_deck_description">Descrizione del mazzo</string>
   <string name="deck_conf_group">Gruppo di opzioni</string>

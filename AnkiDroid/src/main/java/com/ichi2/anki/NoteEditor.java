@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -60,13 +59,14 @@ import com.ichi2.anki.exception.ConfirmModSchemaException;
 import com.ichi2.anki.multimediacard.IMultimediaEditableNote;
 import com.ichi2.anki.multimediacard.activity.MultimediaEditFieldActivity;
 import com.ichi2.anki.multimediacard.fields.AudioField;
+import com.ichi2.anki.multimediacard.fields.EFieldType;
 import com.ichi2.anki.multimediacard.fields.IField;
 import com.ichi2.anki.multimediacard.fields.ImageField;
+import com.ichi2.anki.multimediacard.fields.TextField;
 import com.ichi2.anki.multimediacard.impl.MultimediaEditableNote;
 import com.ichi2.anki.receiver.SdCardReceiver;
 import com.ichi2.anki.servicelayer.NoteService;
 import com.ichi2.async.DeckTask;
-import com.ichi2.filters.FilterFacade;
 import com.ichi2.libanki.Card;
 import com.ichi2.libanki.Collection;
 import com.ichi2.libanki.Note;
@@ -574,12 +574,9 @@ public class NoteEditor extends AnkiActivity {
             }
             Pair<String, String> messages = new Pair<String, String>(first, second);
 
-            /* Filter garbage information */
-            Pair<String, String> cleanMessages = new FilterFacade(getBaseContext()).filter(messages);
-
             mSourceText = new String[2];
-            mSourceText[0] = cleanMessages.first;
-            mSourceText[1] = cleanMessages.second;
+            mSourceText[0] = messages.first;
+            mSourceText[1] = messages.second;
         }
     }
 
@@ -1038,7 +1035,21 @@ public class NoteEditor extends AnkiActivity {
                     IMultimediaEditableNote mNote = NoteService.createEmptyNote(mEditorNote.model());
                     NoteService.updateMultimediaNoteFromJsonNote(col, mEditorNote, mNote);
                     mNote.setField(index, field);
-                    mEditFields.get(index).setText(field.getFormattedValue());
+                    FieldEditText fieldEditText = mEditFields.get(index);
+                    // Completely replace text for text fields (because current text was passed in)
+                    if (field.getType() == EFieldType.TEXT) {
+                        fieldEditText.setText(field.getFormattedValue());
+                    }
+                    // Insert text at cursor position if the field has focus
+                    else if (fieldEditText.hasFocus()) {
+                        fieldEditText.getText().replace(fieldEditText.getSelectionStart(),
+                                fieldEditText.getSelectionEnd(),
+                                field.getFormattedValue());
+                    }
+                    // Append text if the field doesn't have focus
+                    else {
+                        fieldEditText.getText().append(field.getFormattedValue());
+                    }
                     NoteService.saveMedia(col, (MultimediaEditableNote) mNote);
                     mChanged = true;
                 }
@@ -1094,18 +1105,17 @@ public class NoteEditor extends AnkiActivity {
 
             ImageButton mediaButton = (ImageButton) editline_view.findViewById(R.id.id_media_button);
             // Load icons from attributes
-            int[] attrs = new int[] { R.attr.attachFileImage, R.attr.upDownImage};
-            TypedArray ta = obtainStyledAttributes(attrs);
+            int[] icons = Themes.getResFromAttr(this, new int[] { R.attr.attachFileImage, R.attr.upDownImage});
             // Make the icon change between media icon and switch field icon depending on whether editing note type
             if (editModelMode && allowFieldRemapping()) {
                 // Allow remapping if originally more than two fields
-                mediaButton.setBackgroundResource(ta.getResourceId(1, R.drawable.ic_import_export_black_24dp));
+                mediaButton.setBackgroundResource(icons[1]);
                 setRemapButtonListener(mediaButton, i);
             } else if (editModelMode && !allowFieldRemapping()) {
                 mediaButton.setBackgroundResource(0);
             } else {
                 // Use media editor button if not changing note type
-                mediaButton.setBackgroundResource(ta.getResourceId(0, R.drawable.ic_attachment_black_24dp));
+                mediaButton.setBackgroundResource(icons[0]);
                 setMMButtonListener(mediaButton, i);
             }
             mFieldsLayoutContainer.addView(label);
@@ -1138,7 +1148,7 @@ public class NoteEditor extends AnkiActivity {
                         public boolean onMenuItemClick(MenuItem item) {
                             IMultimediaEditableNote mNote = NoteService.createEmptyNote(mEditorNote.model());
                             NoteService.updateMultimediaNoteFromJsonNote(col, mEditorNote, mNote);
-                            IField field = mNote.getField(index);
+                            IField field;
                             switch (item.getItemId()) {
                                 case R.id.menu_multimedia_audio:
                                     Timber.i("NoteEditor:: Record audio button pressed");
@@ -1154,6 +1164,9 @@ public class NoteEditor extends AnkiActivity {
                                     return true;
                                 case R.id.menu_multimedia_text:
                                     Timber.i("NoteEditor:: Advanced editor button pressed");
+                                    field = new TextField();
+                                    field.setText(mEditFields.get(index).getText().toString());
+                                    mNote.setField(index, field);
                                     startMultimediaFieldEditor(index, mNote, field);
                                     return true;
                                 default:

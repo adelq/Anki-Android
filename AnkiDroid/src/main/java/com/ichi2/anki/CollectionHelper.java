@@ -115,6 +115,35 @@ public class CollectionHelper {
         return getCol(path);
     }
 
+    /**
+     * Call getCol(context) inside try / catch statement.
+     * Send exception report and return null if there was an exception.
+     * @param context
+     * @return
+     */
+    public synchronized Collection getColSafe(Context context) {
+        try {
+            return getCol(context);
+        } catch (Exception e) {
+            AnkiDroidApp.sendExceptionReport(e, "CollectionHelper.getColSafe");
+            return null;
+        }
+    }
+
+    /**
+     * Checks whether or not the Android 1MB limit for the cursor size was exceeded
+     * @param context
+     * @return
+     */
+    public synchronized boolean exceededCursorSizeLimit(Context context) {
+        try {
+            getCol(context);
+        } catch (IllegalStateException e) {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Reopen the {@link Collection} after it's been opened at least once, and subsequently closed. If the

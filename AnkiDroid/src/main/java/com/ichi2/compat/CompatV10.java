@@ -4,23 +4,27 @@ package com.ichi2.compat;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnUtteranceCompletedListener;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 
+import com.afollestad.materialdialogs.DialogAction;
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.ichi2.anki.AbstractFlashcardViewer;
 import com.ichi2.anki.AnkiActivity;
 import com.ichi2.anki.AnkiDroidApp;
+import com.ichi2.anki.CardBrowser;
 import com.ichi2.anki.DeckPicker;
-import com.ichi2.anki.NavigationDrawerActivity;
+import com.ichi2.anki.Preferences;
 import com.ichi2.anki.R;
 import com.ichi2.anki.ReadText;
 import com.ichi2.compat.customtabs.CustomTabsFallback;
@@ -59,13 +63,8 @@ public class CompatV10 implements Compat {
         });
     }
 
-    public boolean isWriteAheadLoggingEnabled(SQLiteDatabase db) {
-        // don't use WAL mode on Gingerbread
-        return false;
-    }
-
     public void disableDatabaseWriteAheadLogging(SQLiteDatabase db) {
-        // don't use WAL mode on Gingerbread
+        // We've never used WAL mode on Gingerbread so don't need to do anything here
     }
 
 
@@ -76,7 +75,6 @@ public class CompatV10 implements Compat {
 
 
     // Below API level 16, widget dimensions cannot be adjusted
-    @Override
     public void updateWidgetDimensions(Context context, RemoteViews updateViews, Class<?> cls) {
 
     }
@@ -92,7 +90,6 @@ public class CompatV10 implements Compat {
         activity.startActivityWithoutAnimation(intent);
     }
 
-    @Override
     public void setFullScreen(AbstractFlashcardViewer a) {
         a.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         final int fullscreenMode = Integer.parseInt(AnkiDroidApp.getSharedPrefs(a).getString("fullscreenMode", "0"));
@@ -103,7 +100,6 @@ public class CompatV10 implements Compat {
     }
 
 
-    @Override
     public void setSelectableBackground(View view) {
         // NOTE: we can't use android.R.attr.selectableItemBackground until API 11
         Resources res = view.getContext().getResources();
@@ -113,8 +109,62 @@ public class CompatV10 implements Compat {
         ta.recycle();
     }
 
-    @Override
     public void openUrl(AnkiActivity activity, Uri uri) {
         new CustomTabsFallback().openUri(activity, uri);
+    }
+
+    /**
+     * FloatingActionsMenu has a bug on Android 2.3 where the collapsed menu items can still be clicked,
+     * so we revert to showing a ContextMenu below API 14.
+     * @param activity DeckPicker instance that we can run callbacks on
+     */
+    public void supportAddContentMenu(final DeckPicker activity) {
+        Resources res = activity.getResources();
+        new MaterialDialog.Builder(activity)
+                .items(new String[]{res.getString(R.string.menu_add_note),
+                        res.getString(R.string.menu_get_shared_decks),
+                        res.getString(R.string.new_deck)})
+                .itemsCallback(new MaterialDialog.ListCallback() {
+                    @Override
+                    public void onSelection(MaterialDialog materialDialog, View view, int i,
+                                            CharSequence charSequence) {
+                        switch (i) {
+                            case 0:
+                                activity.addNote();
+                                break;
+                            case 1:
+                                activity.addSharedDeck();
+                                break;
+                            case 2:
+                                final EditText mDialogEditText = new EditText(activity);
+                                mDialogEditText.setSingleLine(true);
+                                new MaterialDialog.Builder(activity)
+                                        .title(R.string.new_deck)
+                                        .positiveText(R.string.dialog_ok)
+                                        .customView(mDialogEditText, true)
+                                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                            @Override
+                                            public void onClick(@NonNull MaterialDialog d, @NonNull DialogAction w) {
+                                                Timber.i("DeckPicker:: Creating new deck...");
+                                                String deckName = mDialogEditText.getText().toString();
+                                                activity.getCol().getDecks().id(deckName, true);
+                                                CardBrowser.clearSelectedDeck();
+                                                activity.onRequireDeckListUpdate();
+                                            }
+                                        })
+                                        .negativeText(R.string.dialog_cancel)
+                                        .show();
+                        }
+                    }
+                })
+                .build().show();
+    }
+
+    @Override
+    public Intent getPreferenceSubscreenIntent(Context context, String subscreen) {
+        // We're using "legacy preference headers" below API 11
+        Intent i = new Intent(context, Preferences.class);
+        i.setAction(subscreen);
+        return i;
     }
 }

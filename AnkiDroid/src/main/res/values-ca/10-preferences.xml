@@ -39,6 +39,7 @@
 ~ this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
+  <string name="disabled">Disabled</string>
   <string name="pref_cat_general">AnkiDroid</string>
   <string name="pref_cat_general_summ">Configuració general</string>
   <string name="pref_cat_reviewing">Revisió</string>
@@ -64,6 +65,8 @@
   <string name="whiteboard_black_summ">Utilitza menys memòria, llevat que estigui en el mode de nit</string>
   <string name="write_answers_disable">Desactiva l\'escriptura en la resposta</string>
   <string name="write_answers_disable_summ">Impedeix que el teclat apareixi en les cartes que contenen camps per escriure la resposta</string>
+  <string name="use_input_tag">Type answer into the card</string>
+  <string name="use_input_tag_summ">Use a text input box inside the card to type in the answer</string>
   <string name="text_selection_click">Solució de premsa llarga</string>
   <string name="text_selection_click_summ">Activeu aquesta opció si no podeu seleccionar text amb un clic perllongat</string>
   <string name="dictionary">Diccionari de cerca</string>
@@ -75,7 +78,7 @@
   <string name="image_zoom">Zoom d\'imatge</string>
   <string name="button_size">Mida de botó de resposta</string>
   <string name="card_browser_font_size">Tamany de lletra al cercador de targetes</string>
-  <string name="col_path">Camí de la col·lecció</string>
+  <string name="col_path">AnkiDroid directory</string>
   <string name="fullscreen_review">Mode de pantalla completa</string>
   <string name="full_screen_off">Off</string>
   <string name="full_screen_system">Hide the system bars</string>
@@ -150,11 +153,14 @@
   <string name="pref_keep_screen_on">Mantenir la pantalla encesa</string>
   <string name="pref_keep_screen_on_summ">Desactiva la pantalla de bloqueig</string>
   <string name="convert_fen_text">Suport de notació d\'escacs</string>
-  <string name="filter_google_translate">Des de Google Translate</string>
-  <string name="filter_google_translate_summ">Desa només la paraula original i la seva traducció</string>
   <string name="convert_fen_text_summ">Draw chessboard from Forsyth–Edwards Notation. The notation must be enclosed in [fen][/fen] tags.</string>
   <string name="enable_api_title">Activa l\'API de l\'AnkiDroid</string>
   <string name="enable_api_summary">Deixar altres apps connectar-se a AnkiDroid i llegir / escriure dades sense la seva intervenció</string>
+  <string name="custom_sync_server_title">Custom sync server</string>
+  <string name="custom_sync_server_enable_title">Use custom sync server</string>
+  <string name="custom_sync_server_enable_summary">If you don\'t want to use the proprietary AnkiWeb service you can specify an alternative server here</string>
+  <string name="custom_sync_server_base_url_title">Sync url</string>
+  <string name="custom_sync_server_media_url_title">Media sync url</string>
   <string name="studyoptions_limit_select_tags">Trieu les etiquetes</string>
   <string name="deck_conf_deck_description">Descripció del paquet</string>
   <string name="deck_conf_group">Grup d\'opcions</string>

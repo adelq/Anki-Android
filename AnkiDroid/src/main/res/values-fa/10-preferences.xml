@@ -39,6 +39,7 @@
 ~ this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
+  <string name="disabled">Disabled</string>
   <string name="pref_cat_general">AnkiDroid</string>
   <string name="pref_cat_general_summ">General settings</string>
   <string name="pref_cat_reviewing">بازبینی</string>
@@ -64,6 +65,8 @@
   <string name="whiteboard_black_summ">حافظه کمتری استفاده می‌کند، اما در حالت شب کار نمی‌کند</string>
   <string name="write_answers_disable">غیر فعال کردن تایپ پاسخ</string>
   <string name="write_answers_disable_summ">Prevents keyboard from appearing on cards containing type-the-answer fields</string>
+  <string name="use_input_tag">Type answer into the card</string>
+  <string name="use_input_tag_summ">Use a text input box inside the card to type in the answer</string>
   <string name="text_selection_click">راه‌حل کلیک طولانی</string>
   <string name="text_selection_click_summ">اگر از طریق کلیک طولانی نمی توانید متن را انتخاب کنید این را انجام دهید</string>
   <string name="dictionary">فرهنگ لغت برای مراجعه</string>
@@ -75,7 +78,7 @@
   <string name="image_zoom">Image zoom</string>
   <string name="button_size">Answer button size</string>
   <string name="card_browser_font_size">تغییر اندازه فونت مرورگر کارت</string>
-  <string name="col_path">مسیر مجموعه</string>
+  <string name="col_path">AnkiDroid directory</string>
   <string name="fullscreen_review">حالت تمام‌صفحه</string>
   <string name="full_screen_off">Off</string>
   <string name="full_screen_system">Hide the system bars</string>
@@ -151,11 +154,14 @@
   <string name="pref_keep_screen_on">روشن نگه‌داشتن صفحه</string>
   <string name="pref_keep_screen_on_summ">غیرفعال کردن زمان خاموش شدن صفحه نمایش</string>
   <string name="convert_fen_text">پشتیبانی از ثبت حرکات شطرنج</string>
-  <string name="filter_google_translate">ترجمه از گوگل</string>
-  <string name="filter_google_translate_summ">اکنون کلمه اصلی و ترجمه را ذخیره کنید</string>
   <string name="convert_fen_text_summ">رسم صفحه شطرنجی از Forsyth Edwards Notation. یادداشت باید داخل تگ [fen][/fen] محصور باشد</string>
   <string name="enable_api_title">Enable AnkiDroid API</string>
   <string name="enable_api_summary">Let other apps connect to AnkiDroid and read / write data without your intervention</string>
+  <string name="custom_sync_server_title">Custom sync server</string>
+  <string name="custom_sync_server_enable_title">Use custom sync server</string>
+  <string name="custom_sync_server_enable_summary">If you don\'t want to use the proprietary AnkiWeb service you can specify an alternative server here</string>
+  <string name="custom_sync_server_base_url_title">Sync url</string>
+  <string name="custom_sync_server_media_url_title">Media sync url</string>
   <string name="studyoptions_limit_select_tags">انتخاب برچسبها</string>
   <string name="deck_conf_deck_description">توصیف دسته</string>
   <string name="deck_conf_group">Options group</string>

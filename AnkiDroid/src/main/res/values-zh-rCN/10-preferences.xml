@@ -39,6 +39,7 @@
 ~ this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <resources>
+  <string name="disabled">Disabled</string>
   <string name="pref_cat_general">AnkiDroid</string>
   <string name="pref_cat_general_summ">常用设置</string>
   <string name="pref_cat_reviewing">复习</string>
@@ -64,6 +65,8 @@
   <string name="whiteboard_black_summ">在非夜间模式中占用更少内存</string>
   <string name="write_answers_disable">禁用键入答案</string>
   <string name="write_answers_disable_summ">在包括“输入答案”字段的卡片中，禁止弹出键盘</string>
+  <string name="use_input_tag">Type answer into the card</string>
+  <string name="use_input_tag_summ">Use a text input box inside the card to type in the answer</string>
   <string name="text_selection_click">长按解决方案</string>
   <string name="text_selection_click_summ">如果您不能够通过长点击选择文本，启用此选项。</string>
   <string name="dictionary">查找字典</string>
@@ -75,7 +78,7 @@
   <string name="image_zoom">图片缩放</string>
   <string name="button_size">显示答案按钮大小</string>
   <string name="card_browser_font_size">卡片浏览器字体缩放</string>
-  <string name="col_path">集合的路径</string>
+  <string name="col_path">AnkiDroid directory</string>
   <string name="fullscreen_review">全屏显示</string>
   <string name="full_screen_off">Off</string>
   <string name="full_screen_system">Hide the system bars</string>
@@ -150,11 +153,14 @@
   <string name="pref_keep_screen_on">保持屏幕常亮</string>
   <string name="pref_keep_screen_on_summ">禁用屏幕超时</string>
   <string name="convert_fen_text">国际象棋标注支持</string>
-  <string name="filter_google_translate">从谷歌获取翻译</string>
-  <string name="filter_google_translate_summ">保存源词与翻译</string>
   <string name="convert_fen_text_summ">使用福斯夫－爱德华兹记号法来画棋盘。记号必须用[fen][/fen]标签括起来。</string>
   <string name="enable_api_title">启用AnkiDroid API</string>
   <string name="enable_api_summary">让其他的应用程序连接到AnkiDroid读写数据</string>
+  <string name="custom_sync_server_title">Custom sync server</string>
+  <string name="custom_sync_server_enable_title">Use custom sync server</string>
+  <string name="custom_sync_server_enable_summary">If you don\'t want to use the proprietary AnkiWeb service you can specify an alternative server here</string>
+  <string name="custom_sync_server_base_url_title">Sync url</string>
+  <string name="custom_sync_server_media_url_title">Media sync url</string>
   <string name="studyoptions_limit_select_tags">选择标签</string>
   <string name="deck_conf_deck_description">牌组说明</string>
   <string name="deck_conf_group">选项组</string>

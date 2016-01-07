@@ -483,7 +483,9 @@ public class AnkiActivity extends AppCompatActivity implements LoaderManager.Loa
                     .setSmallIcon(R.drawable.ic_stat_notify)
                     .setContentTitle(title)
                     .setContentText(message)
+                    .setColor(getResources().getColor(R.color.theme_primary))
                     .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setTicker(ticker);
             // Enable vibrate and blink if set in preferences
             if (prefs.getBoolean("widgetVibrate", false)) {
@@ -528,7 +530,7 @@ public class AnkiActivity extends AppCompatActivity implements LoaderManager.Loa
 
     // Restart the activity
     @SuppressLint("NewApi")
-    protected void restartActivity() {
+    public void restartActivity() {
         Timber.i("AnkiActivity -- restartActivity()");
         Intent intent = new Intent();
         intent.setClass(this, this.getClass());
